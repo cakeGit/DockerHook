@@ -1,0 +1,14 @@
+[Unit]
+Description=DockerHook front-end (express)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /root/dockerhook/src/index.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

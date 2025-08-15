@@ -1,0 +1,128 @@
+/* Serious dark UI for DockerHook */
+:root{
+    --bg:#0f1724; /* dark slate */
+    --surface:#111827; /* card background */
+    --muted:#9aa6b2;
+    --text:#e6eef8;
+    --accent:#7c5cff; /* subtle purple */
+    --glass: rgba(255,255,255,0.03);
+}
+
+html,body{height:100%;}
+
+/* make sizing predictable so width:100% includes padding/border */
+*,*::before,*::after{box-sizing:border-box}
+body{
+    margin:0;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, "Helvetica Neue", Arial;
+    /* full-height linear gradient going up the screen with a subtle purple overlay */
+    background-image: linear-gradient(to top, rgba(124,92,255,0.10) 0%, rgba(124,92,255,0.04) 30%, rgba(124,92,255,0.00) 60%),
+                      linear-gradient(to top, #03101a 0%, #0f1724 35%, #0b1228 65%, #061426 100%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color:var(--text);
+    overflow:auto;
+}
+
+.scene{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:48px}
+
+/* card surface so UI elements read against the gradient */
+.card{
+    position:relative;
+    z-index:2;
+    max-width:980px;
+    width:100%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0.006));
+    border:1px solid rgba(255,255,255,0.03);
+    padding:28px;
+    border-radius:12px;
+    box-shadow: 0 12px 36px rgba(2,6,23,0.6);
+}
+
+h1{
+    margin:0 0 10px;
+    font-weight:700;
+    color:var(--text);
+    letter-spacing:0.6px;
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    font-size:20px;
+}
+h1 .v{color:var(--accent);font-weight:700}
+
+.row{display:flex;gap:12px;align-items:center;margin:10px 0}
+.label{font-weight:600;color:var(--muted);width:160px}
+.value{font-weight:700;color:var(--text)}
+.value.active{color:var(--accent)}
+.value.inactive{color:#6b7480}
+.value.updating{color:var(--accent)}
+
+/* status icon */
+.value-row{display:inline-flex;align-items:center;gap:10px}
+.status-icon{display:inline-block;width:12px;height:12px;border-radius:50%;box-shadow:0 0 8px rgba(0,0,0,0.4)}
+.status-icon.active{background:linear-gradient(180deg,var(--accent), #5b3bff);box-shadow:0 0 8px rgba(124,92,255,0.28)}
+.status-icon.inactive{background:#4b5563}
+.status-icon.updating{background:linear-gradient(180deg,#ffd166,#ff8a66);box-shadow:0 0 8px rgba(255,140,102,0.18)}
+.status-icon.error{background:#ef4444;box-shadow:0 0 12px rgba(239,68,68,0.2)}
+
+hr{border:0;height:1px;background:linear-gradient(90deg,transparent, rgba(255,255,255,0.03), transparent);margin:18px 0}
+
+h3{margin:0 0 8px;color:var(--muted);font-weight:600}
+
+textarea#log{
+    width:100%;
+    max-width:100%;
+    min-height:300px;
+    padding:12px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', monospace;
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+    border:1px solid var(--glass);
+    color:var(--text);
+    resize:none; /* disallow manual scaling */
+    overflow:auto;
+    border-radius:8px;
+}
+
+/* remove default focus outline on the log textarea (keeps layout stable) */
+textarea#log:focus{
+    outline: none;
+    box-shadow: none;
+}
+
+.controls{margin-top:14px;display:flex;gap:12px}
+
+/* buttons */
+.btn{
+    padding:10px 16px;
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,0.03);
+    background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.005));
+    color:var(--text);
+    cursor:pointer;
+    font-weight:600;
+    transition:transform .08s ease, box-shadow .08s ease;
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+.btn.ghost{border:1px solid rgba(124,92,255,0.14);color:var(--accent);background:transparent}
+
+.credit{position:fixed;left:18px;bottom:18px;color:rgba(255,255,255,0.06);font-size:12px;font-weight:600;letter-spacing:1px}
+
+/* semi-transparent watermark */
+.watermark{
+    position:fixed;
+    right:18px;
+    bottom:14px;
+    color:rgba(255,255,255,0.5); /* 50% transparent */
+    font-size:12px;
+    font-weight:600;
+    pointer-events:none;
+    user-select:none;
+    letter-spacing:0.6px;
+    z-index:1;
+}
+
+@media (max-width:700px){
+    .card{margin:16px;padding:18px;border-radius:12px}
+    .label{width:120px}
+}

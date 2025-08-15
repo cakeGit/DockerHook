@@ -1,0 +1,16 @@
+{
+  "url": "http://localhost:3000/",
+  "status": 200,
+  "title": "Docker Hook",
+  "missingMetaViewport": false,
+  "imagesWithoutAlt": 0,
+  "consoleMessages": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "pageErrors": [],
+  "screenshot": "C:\\GitHub\\DockerHook\\artifacts\\homepage.png",
+  "timestamp": 1755286787475
+}

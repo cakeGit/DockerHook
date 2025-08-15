@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <title>Docker Hook</title>
+        <meta name="theme-color" content="#0f1724" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="/style.css" />
+    </head>
+    <body>
+        <div class="scene">
+            <div class="card">
+                <h1 id="title">
+                    DOCKER HOOK <span class="v">V</span
+                    ><span id="version">-</span>
+                </h1>
+                <div class="row">
+                    <div class="label">STATUS:</div>
+                    <div class="value-row">
+                        <span
+                            id="status-icon"
+                            class="status-icon inactive"
+                            aria-hidden="true"
+                        ></span>
+                        <div id="status" class="value inactive"></div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="label">LAST UPDATED:</div>
+                    <div id="last">—</div>
+                </div>
+                <hr />
+                <h3>Log</h3>
+                <textarea id="log" readonly></textarea>
+                <div class="controls">
+                    <button id="refresh" class="btn">Refresh</button>
+                </div>
+            </div>
+            <footer class="credit">neon · dockerhook</footer>
+            <div class="watermark" aria-hidden="true">
+                made with ❤️ by cakeGit and copilot
+            </div>
+        </div>
+        <script src="/app.js"></script>
+    </body>
+</html>

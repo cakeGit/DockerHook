@@ -1,0 +1,24 @@
+networks:
+  cloudflared:
+    name: cloudflared
+    driver: bridge
+    
+services:
+  cloudflare-tunnel:
+    image: cloudflare/cloudflared
+    container_name: cloudflare-tunnel
+    restart: unless-stopped
+    env_file: tunnel.env
+    command: tunnel --no-autoupdate run
+    networks:
+      - cloudflared
+  nodrix:
+    image: nodrix
+    container_name: nodrix
+    restart: unless-stopped
+    volumes:
+      - ./stats:/stats
+    ports:
+      - "8000:8000"
+    networks:
+      - cloudflared

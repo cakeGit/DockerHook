@@ -1,6 +1,6 @@
 networks:
-  cloudflared:
-    name: cloudflared
+  cloudflared-docker:
+    name: cloudflared-docker
     driver: bridge
     
 services:
@@ -11,7 +11,7 @@ services:
     env_file: tunnel.env
     command: tunnel --no-autoupdate run
     networks:
-      - cloudflared
+      - cloudflared-docker
   nodrix:
     image: nodrix
     container_name: nodrix
@@ -21,4 +21,4 @@ services:
     ports:
       - "8000:8000"
     networks:
-      - cloudflared
+      - cloudflared-docker

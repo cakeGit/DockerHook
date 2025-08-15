@@ -7,7 +7,7 @@ Type=simple
 User=root
 WorkingDirectory=/root
 Environment=NODE_ENV=production
-ExecStart=/usr/bin/node /root/dockerhook/src/watcher.js
+ExecStart=/usr/bin/node /root/DockerHook/src/watcher.js
 Restart=on-failure
 
 [Install]

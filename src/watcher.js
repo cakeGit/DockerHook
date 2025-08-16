@@ -68,7 +68,9 @@ async function pollComposeStatePeriodically(workdir) {
         const state = running ? "active" : "inactive";
         if (_lastComposeState !== state) {
             _lastComposeState = state;
-            writeStatus({ state, lastAt: new Date().toISOString() });
+            // Only update the state on compose polls; do NOT touch lastAt here so
+            // "LAST UPDATED" reflects only actual updates triggered by webhooks.
+            writeStatus({ state });
             appendLog(`compose poll: state=${state}`);
         }
         return state;
@@ -187,6 +189,18 @@ function appendLog(line) {
     try {
         const ts = new Date().toISOString();
         fs.appendFileSync(LOG_FILE, `[${ts}] ${line}\n`, { mode: 0o600 });
+        // trim log to last 40 non-empty lines to keep history bounded
+        try {
+            const raw = fs.readFileSync(LOG_FILE, "utf8");
+            const parts = raw.split(/\r?\n/).filter(Boolean);
+            if (parts.length > 40) {
+                const tail = parts.slice(-40).join("\n") + "\n";
+                fs.writeFileSync(LOG_FILE, tail, { mode: 0o600 });
+            }
+        } catch (e) {
+            // ignore trimming errors but log to stderr
+            console.error("failed to trim log", e.message);
+        }
     } catch (err) {
         console.error("failed to append log", err.message);
     }

@@ -5,8 +5,9 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/root
+WorkingDirectory=/root/DockerHook
 Environment=NODE_ENV=production
+Environment=TRIGGER_DIR=/var/run/dockerhook
 ExecStart=/usr/bin/node /root/DockerHook/src/index.js
 Restart=on-failure
 

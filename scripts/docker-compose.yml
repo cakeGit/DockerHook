@@ -6,15 +6,15 @@ networks:
 services:
   cloudflare-tunnel:
     image: cloudflare/cloudflared
-    container_name: cloudflare-tunnel
+    container_name: cloudflare-docker-tunnel
     restart: unless-stopped
     env_file: tunnel.env
     command: tunnel --no-autoupdate run
     networks:
       - cloudflared-docker
-  nodrix:
+  nodrix-secondary:
     image: nodrix
-    container_name: nodrix
+    container_name: nodrix-secondary
     restart: unless-stopped
     volumes:
       - ./stats:/stats

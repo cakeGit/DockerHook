@@ -9,6 +9,8 @@ const PROCESS_DIR = path.join(WATCH_DIR, "processing");
 const PROCESSED_DIR = path.join(WATCH_DIR, "processed");
 const FAILED_DIR = path.join(WATCH_DIR, "failed");
 const POLL_INTERVAL = 2000;
+// poll docker-compose state every 5 minutes so frontend status stays accurate
+const COMPOSE_POLL_INTERVAL = 5 * 60 * 1000;
 const UPDATE_CMD =
     process.env.UPDATE_CMD || "docker compose pull && docker compose up -d";
 const LOG_FILE = path.join(WATCH_DIR, "update.log");
@@ -46,6 +48,48 @@ function runShell(cmd, cwd = "/") {
         p.stderr.on("data", (b) => (err += b.toString()));
         p.on("close", (code) => resolve({ code, out, err }));
     });
+}
+
+async function isComposeRunning(workdir = "/") {
+    try {
+        // ask compose for container ids for the current project; if any exist consider it running
+        const res = await runShell("docker compose ps -q", workdir);
+        if (res.code !== 0) return false;
+        return Boolean(String(res.out || "").trim());
+    } catch (err) {
+        return false;
+    }
+}
+
+let _lastComposeState = null;
+async function pollComposeStatePeriodically(workdir) {
+    try {
+        const running = await isComposeRunning(workdir);
+        const state = running ? "active" : "inactive";
+        if (_lastComposeState !== state) {
+            _lastComposeState = state;
+            writeStatus({ state, lastAt: new Date().toISOString() });
+            appendLog(`compose poll: state=${state}`);
+        }
+        return state;
+    } catch (e) {
+        // ignore polling errors but log
+        appendLog(`compose poll error: ${e.message || String(e)}`);
+        return null;
+    }
+}
+
+// Adaptive poll loop: poll every COMPOSE_POLL_INTERVAL when active, or every 1 minute when inactive
+async function composePollLoop(workdir) {
+    try {
+        const state = await pollComposeStatePeriodically(workdir);
+        const nextInterval =
+            state === "active" ? COMPOSE_POLL_INTERVAL : 60 * 1000;
+        setTimeout(() => composePollLoop(workdir), nextInterval);
+    } catch (e) {
+        // on unexpected error, retry in 1 minute
+        setTimeout(() => composePollLoop(workdir), 60 * 1000);
+    }
 }
 
 async function processOne(file) {
@@ -178,7 +222,38 @@ async function loopOnce() {
 
 async function main() {
     ensureDirs();
-    console.log("watcher started, watchDir=", WATCH_DIR);
+    // determine compose working dir and write an initial status so the frontend reflects current state
+    const workdir =
+        process.env.COMPOSE_DIR ||
+        path.dirname(config.composePath || "/root/docker_compose.yml") ||
+        "/";
+    try {
+        const running = await isComposeRunning(workdir);
+        if (running) {
+            writeStatus({ state: "active", lastAt: new Date().toISOString() });
+        } else {
+            writeStatus({
+                state: "inactive",
+                lastAt: new Date().toISOString(),
+            });
+        }
+    } catch (e) {
+        // ignore
+    }
+    console.log(
+        "watcher started, watchDir=",
+        WATCH_DIR,
+        "composeDir=",
+        workdir
+    );
+    // start compose polling loop
+    try {
+        // run immediately to seed status and start adaptive polling loop
+        await pollComposeStatePeriodically(workdir);
+        composePollLoop(workdir);
+    } catch (e) {
+        // ignore
+    }
     // simple polling loop so we avoid depending on inotify on all platforms
     setInterval(loopOnce, POLL_INTERVAL);
     // also run once immediately

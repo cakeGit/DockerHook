@@ -5,8 +5,10 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/root
+WorkingDirectory=/root/DockerHook
 Environment=NODE_ENV=production
+Environment=TRIGGER_DIR=/var/run/dockerhook
+Environment=COMPOSE_DIR=/root/
 ExecStart=/usr/bin/node /root/DockerHook/src/watcher.js
 Restart=on-failure
 

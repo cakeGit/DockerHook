@@ -1,7 +1,9 @@
 const dotenv = require("dotenv");
 const path = require("path");
 
-dotenv.config();
+dotenv.config({
+    path: "/root/DockerHook/.env",
+});
 
 const normPath = (p) => (p ? path.normalize(p) : p);
 

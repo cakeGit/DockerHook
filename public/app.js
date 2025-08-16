@@ -15,6 +15,10 @@ function pad(n) {
     return String(n).padStart(2, "0");
 }
 
+// client-side short-lived messages (e.g. trigger results) that should persist
+// across periodic refreshes. We keep them separate from the server log.
+let clientNotes = "";
+
 function timeAgo(ts) {
     const now = Date.now();
     const diff = Math.max(0, Math.floor((now - ts) / 1000)); // seconds
@@ -50,7 +54,8 @@ async function refresh() {
         // Only display last updated according to the lastAt value (set on actual updates).
         $("last").textContent = formatLast(s.lastAt);
         const log = await fetchLog();
-        $("log").value = log;
+        // preserve any client-side notes above the server log
+        $("log").value = clientNotes + log;
     } catch (err) {
         $("status").textContent = "ERROR";
         $("status").className = "value inactive";
@@ -63,7 +68,7 @@ async function refresh() {
 document.addEventListener("DOMContentLoaded", () => {
     $("refresh").addEventListener("click", refresh);
     $("trigger").addEventListener("click", async () => {
-        const key = $("authKey").value || "";
+        const key = ($("authKey").value || "").trim();
         const repo = $("repoName").value || "example/repo";
         const now = new Date().toISOString();
         const payload = {
@@ -83,30 +88,37 @@ document.addEventListener("DOMContentLoaded", () => {
             received_at: now,
         };
         try {
+            const headers = {
+                "Content-Type": "application/json",
+                "X-GitHub-Event": "push",
+            };
+            if (key) {
+                headers.Authorization = `Bearer ${key}`;
+                headers["x-api-token"] = key;
+            }
             const res = await fetch("/webhook", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: key ? `Bearer ${key}` : "",
-                    "X-GitHub-Event": "push",
-                },
+                headers,
                 body: JSON.stringify(payload),
             });
             if (!res.ok) {
                 const body = await res.json().catch(() => null);
                 const msg =
                     body && body.error ? body.error : `status=${res.status}`;
-                $("log").value = `[trigger] failed: ${msg}\n` + $("log").value;
+                clientNotes = `[trigger] failed: ${msg}\n` + clientNotes;
+                // refresh to update server log but keep our note above it
+                await refresh();
             } else {
                 const body = await res.json().catch(() => ({}));
-                $("log").value =
+                clientNotes =
                     `[trigger] accepted ${JSON.stringify(body)}\n` +
-                    $("log").value;
+                    clientNotes;
                 // refresh UI to reflect new trigger being processed
                 setTimeout(refresh, 500);
             }
         } catch (e) {
-            $("log").value = `[trigger] error: ${e.message}\n` + $("log").value;
+            clientNotes = `[trigger] error: ${e.message}\n` + clientNotes;
+            await refresh();
         }
     });
     refresh();
